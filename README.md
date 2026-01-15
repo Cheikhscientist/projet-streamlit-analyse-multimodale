@@ -2,6 +2,10 @@
 
 Application d’analyse **CSV**, **texte** et **images** développée en Python avec Streamlit.
 
+## Accès à l’application
+L’application est accessible en ligne à l’adresse :
+[https://TON-LIEN.streamlit.app](https://projet-app-analyse-multimodale-c9xyt7rdxexmisnvx8f3rf.streamlit.app/)
+
 ---
 
 ##  Présentation du projet
