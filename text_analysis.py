@@ -8,7 +8,7 @@ import nltk
 nltk.download('stopwords')
 from nltk.corpus import stopwords
 
-def page_text():
+def text_page():
     st.title("📝 Analyse de texte")
 
     uploaded_file = st.file_uploader("Importer un fichier texte (.txt)", type=["txt"])
