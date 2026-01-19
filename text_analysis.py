@@ -41,7 +41,7 @@ def text_page():
         )
 
     if not raw_text:
-        st.info("Veuillez saisir ou importer un texte pour commencer.")
+        st.info("Veuillez saisir ou importer un texte pour commencer (en anglais). ")
         return
 
     # Nettoyage
