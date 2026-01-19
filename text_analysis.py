@@ -35,13 +35,13 @@ def text_page():
         raw_text = uploaded_file.read().decode("utf-8")
     else:
         raw_text = st.text_area(
-            "✏️ Ou collez votre texte ici",
+            "✏️ Ou collez votre texte ici en anglais",
             height=200,
             placeholder="Exemple : This project is amazing but challenging..."
         )
 
     if not raw_text:
-        st.info("Veuillez saisir ou importer un texte pour commencer (en anglais). ")
+        st.info("Veuillez saisir ou importer un texte pour commencer. ")
         return
 
     # Nettoyage
