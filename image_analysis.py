@@ -1,97 +1,76 @@
 import streamlit as st
-from PIL import Image, ImageOps, ImageFilter
+from PIL import Image, ImageOps
+import io
 
 def image_page():
-    st.header("🖼️ Analyse et traitement d’images")
+    """
+    Fonction gérant la section 'Analyse d'images' du projet.
+    Inclut l'importation, l'affichage des métadonnées et les transformations.
+    """
+    st.title("🖼️ Analyse d'Images")
+    st.write("Importez une image pour l'analyser et l'éditer.")
 
-    st.markdown(
-        "Importez une image, explorez ses métadonnées et appliquez "
-        "des transformations et effets visuels."
-    )
+    # 1. Import d'images (jpg, png) - Contrainte technique du projet 
+    uploaded_file = st.file_uploader("Choisissez une image...", type=["jpg", "jpeg", "png"])
 
-    st.divider()
+    if uploaded_file is not None:
+        # Chargement de l'image avec Pillow 
+        image = Image.open(uploaded_file)
+        
+        # Mise en page avec colonnes
+        col1, col2 = st.columns(2)
 
-    # Upload image
-    file = st.file_uploader(
-        "📂 Importer une image",
-        type=["jpg", "jpeg", "png"]
-    )
+        with col1:
+            st.subheader("Aperçu")
+            st.image(image, use_container_width=True)
 
-    if file is None:
-        st.info("Veuillez importer une image pour commencer.")
-        return
+        with col2:
+            # 2. Affichage des métadonnées (Taille et Mode) 
+            st.subheader("Métadonnées")
+            st.write(f"**Format :** {image.format}")
+            st.write(f"**Dimensions :** {image.size[0]} x {image.size[1]} pixels")
+            st.write(f"**Mode de couleur :** {image.mode}")
 
-    image = Image.open(file)
+        st.divider()
 
-    # Métadonnées
-    st.subheader("📋 Métadonnées")
-    col_meta1, col_meta2 = st.columns(2)
+        # 3. Transformations basiques 
+        st.subheader("🛠️ Transformations")
+        
+        transformation = st.selectbox(
+            "Sélectionnez une action :",
+            ["Conserver l'original", "Niveaux de gris", "Redimensionner", "Pivoter"]
+        )
 
-    with col_meta1:
-        st.write(f"**Nom :** {file.name}")
-        st.write(f"**Format :** {image.format}")
-    with col_meta2:
-        st.write(f"**Dimensions :** {image.size[0]} x {image.size[1]} px")
-        st.write(f"**Mode couleur :** {image.mode}")
+        # On travaille sur une copie pour ne pas modifier l'originale
+        img_modified = image.copy()
 
-    # Image originale
-    st.subheader("🖼️ Image originale")
-    st.image(image, use_container_width=True)
+        if transformation == "Niveaux de gris":
+            img_modified = ImageOps.grayscale(img_modified)
+            st.image(img_modified, caption="Version noir et blanc")
 
-    # Paramètres
-    st.subheader("⚙️ Transformations de base")
-    col1, col2, col3 = st.columns(3)
+        elif transformation == "Redimensionner":
+            ratio = st.slider("Ratio de taille (%)", 10, 200, 100)
+            new_w = int(image.width * ratio / 100)
+            new_h = int(image.height * ratio / 100)
+            img_modified = img_modified.resize((new_w, new_h))
+            st.image(img_modified, caption=f"Redimensionné en : {new_w}x{new_h}")
 
-    with col1:
-        grayscale = st.checkbox("Niveaux de gris")
+        elif transformation == "Pivoter":
+            angle = st.slider("Angle (degrés)", 0, 360, 0)
+            img_modified = img_modified.rotate(angle)
+            st.image(img_modified, caption=f"Rotation de {angle}°")
 
-    with col2:
-        rotate = st.slider("Rotation (°)", -180, 180, 0)
+        # Option de téléchargement pour l'image transformée
+        if transformation != "Conserver l'original":
+            buf = io.BytesIO()
+            img_modified.save(buf, format="PNG")
+            st.download_button(
+                label="💾 Télécharger l'image modifiée",
+                data=buf.getvalue(),
+                file_name="image_analyse.png",
+                mime="image/png"
+            )
 
-    with col3:
-        resize = st.slider("Redimensionnement max (px)", 100, 2000, 500)
-
-    # Effets visuels
-    st.subheader("🎨 Effets visuels")
-    effect = st.selectbox(
-        "Choisir un effet",
-        ["Aucun", "Contours", "Cartoon", "Inversion des couleurs"]
-    )
-
-    # Application des transformations
-    processed = image.copy()
-
-    if grayscale:
-        processed = ImageOps.grayscale(processed)
-
-    processed.thumbnail((resize, resize))
-
-    if rotate != 0:
-        processed = processed.rotate(rotate, expand=True)
-
-    # Application des effets
-    if effect == "Contours":
-        processed = ImageOps.grayscale(processed).filter(ImageFilter.FIND_EDGES)
-
-    elif effect == "Cartoon":
-        edges = ImageOps.grayscale(processed).filter(ImageFilter.FIND_EDGES)
-        processed = ImageOps.colorize(edges, black="black", white="white")
-
-    elif effect == "Inversion des couleurs":
-        processed = ImageOps.invert(processed.convert("RGB"))
-
-    # Comparaison avant / après
-    st.subheader("🔍 Comparaison avant / après")
-    colA, colB = st.columns(2)
-
-    with colA:
-        st.image(image, caption="Originale", use_container_width=True)
-
-    with colB:
-        st.image(processed, caption="Après traitement", use_container_width=True)
-
-    # Dimensions finales
-    st.caption(
-        f"📐 Dimensions originales : {image.size[0]} x {image.size[1]} px | "
-        f"Après traitement : {processed.size[0]} x {processed.size[1]} px"
-    )
+# Exemple d'appel dans le fichier principal
+if __name__ == "__main__":
+    image_page()
